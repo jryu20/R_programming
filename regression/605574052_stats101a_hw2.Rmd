@@ -1,0 +1,119 @@
+---
+title: "Homework 2"
+author: "Jun Ryu, UID: 605574052"
+output: pdf_document
+date: "2023-04-14"
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+```
+
+## Question 1
+
+### a)
+
+```{r}
+n <- 30 # sample size
+xbar <- 23606 # sample mean
+s <- 24757 # sample standard deviation
+
+margin <- qt(0.975,df=n-1)*s/sqrt(n) # margin of error
+LB <- xbar - margin # lower bound
+UB <- xbar + margin # upper bound
+
+c(LB,UB) # our 95% confidence interval
+```
+
+### b)
+
+We must assume that either the population distribution is normal or the sample size is large enough to yield good approximations.
+
+### c)
+
+No, the confidence interval is used to determine confidence about the true population mean, rather than another sample's mean.
+
+### d)
+
+Our null hypothesis is that the mean income of US residents (in 2000) was $25,000, and the alternate hypothesis is that it was not. Our derivation of the p-value is as follows:
+
+```{r}
+z_score <- (xbar - 25000)/(s/sqrt(n)) # get the z-score
+2*pnorm(z_score) # turn it into two-tailed p-value
+```
+
+Since our p-value of 0.75772 is greater than the significance level of 5% (0.05), we fail to reject the null hypothesis.
+
+### e)
+
+The smallest significance level we could have used is approximately 76% (0.76 > 0.757772) to reject the null hypothesis.
+
+## Question 2
+
+### a)
+
+Our formula for a 95% confidence interval given a population proportion p is: $\hat{p}\pm1.96\sqrt{\hat{p}(1-\hat{p})/n}$. So, in this case, when we increase the sample size (n), the expression inside the square root will yield a smaller value, leading to a smaller margin of error and a tighter confidence interval.
+
+### b)
+
+Now, when we adjust the confidence level to be lower, we observe that the number of SEs (standard errors) will be less than the current set value of 1.96. For example, a confidence level of 90% will result in 1.645, which is less than 1.96. Thus, having a smaller number out front will cause the margin of error to be smaller as well, corresponding to a tighter confidence interval.
+
+## Question 3
+
+```{r}
+cdc <- read.csv("cdc.csv")
+head(cdc)
+```
+
+### a)
+
+```{r}
+mean(cdc$weight[cdc$exerany == 1]) # mean weight of people who exercise
+```
+
+So, our null hypothesis is that people who do not exercise have the same weight as those of people that do exercise. In other words, $H_0:$ (average weight of people who do not exercise) $= 169.0387$. Alternative hypothesis is $H_a:$ (average weight of people who do not exercise) $\neq 160.0387$.
+
+### b)
+
+```{r}
+#perform a two-tailed t-test
+t.test(cdc$weight[cdc$exerany == 0], cdc$weight[cdc$exerany == 1])
+```
+
+The value of the test statistic is 3.6842 here.
+
+### c)
+
+As seen in the above t.test, we have that the p-value is 0.0002309.
+
+### d)
+
+Since the p-value is less than our significance level of 5% (0.05), we have sufficient reasoning to reject the null hypothesis that the average weight of people who do not exercise do not differ from those of people that exercise.
+
+### e)
+
+That is not correct. The p-value can be used to reject or fail to reject the null hypothesis, but this does not indicate the truth of the null (nor the alternative) hypothesis. What the p-value actually measures is how likely the observed differences between groups are according to chance. The lower this number is, the stronger evidence we have to reject the null since the observed differences are unlikely due to chance.
+
+### f)
+
+The significance level indicates the likelihood that the events could have occurred due to chance. The lower this number is, we generally need stronger evidence to reject the "status quo" (the null) since we are setting a stricter bound on the events not occurring by chance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

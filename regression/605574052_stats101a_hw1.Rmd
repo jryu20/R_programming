@@ -1,0 +1,69 @@
+---
+title: "Homework 1"
+author: "Jun Ryu, UID: 605574052"
+output: pdf_document
+date: "2023-04-07"
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+```
+
+## Question 1
+
+```{r}
+taxi <- read.csv("chicagotaxiraw.csv") # read in the data
+
+# locate the column numbers of the columns that we want to extract (1:6, 11:17)
+clean_taxi <- as_tibble(taxi[,c(1:6, 11:17)])
+clean_taxi
+
+# now, we use tolower() for lowercasing
+names(clean_taxi) <- tolower(names(clean_taxi))
+clean_taxi
+```
+
+## Question 2
+
+```{r}
+# use as.Date to extract the dates
+range(as.Date(clean_taxi$trip.start.timestamp))
+range(as.Date(clean_taxi$trip.end.timestamp), na.rm = T)
+```
+
+As we can see by the results above, the date of the first pickup is 2013/1/1 and the date of the last dropoff is 2017/5/31 in this dataset.
+
+## Question 3
+
+```{r}
+# use table() to get a summary table based on the day of the week
+table(weekdays(as.Date(clean_taxi$trip.start.timestamp)))
+```
+
+Based on the above table, we observe that Friday had the greatest number of trips begin with 16767 trips and Monday had the least with 12406 trips in this dataset.
+
+## Question 4
+
+```{r}
+# use str_replace() to drop the dollar sign and as.numeric() for numeric conversion
+clean_taxi$tips <- as.numeric(str_replace(clean_taxi$tips, "[$]", ""))
+
+range(clean_taxi$tips)
+mean(clean_taxi$tips)
+median(clean_taxi$tips)
+table(clean_taxi$tips == 0)
+```
+
+For a typical amount for a tip, we notice that going off of the median value of 0 is a better indicator than the mean. This is due to the fact that certain upper values like our maximum value of 97 will likely skew the mean. Indeed, looking at our table, we can verify that the majority of people actually do not tip for a ride, causing our median to be 0. 
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,228 @@
+---
+title: "Homework 5"
+author: 'Jun Ryu, UID: 605574052'
+date: "2023-05-05"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+```
+
+## Components of ANOVA Table
+
+### a)
+
+RSS is $\hat{\sigma}^2 * (n-2)$, where $n-2$ represents the degrees of freedom. We can find $\hat{\sigma}$ from the table where it says residual standard error. 
+
+```{r}
+df <- 33
+rss <- 2.418^2 * df
+rss
+```
+
+### b)
+
+We have $F = \frac{SS_{reg}/1}{RSS/df}$, so $SS_{reg} = \frac{F*RSS}{df}$.
+
+```{r}
+ss_reg <- 87.17*rss/df
+ss_reg
+```
+
+### c)
+
+Mean SSreg is just $\frac{SS_{reg}}{df}$.
+
+```{r}
+mean_ss <- ss_reg/df
+mean_ss
+```
+
+### d)
+
+Total SS is $SS_{reg} + RSS$.
+
+```{r}
+total_ss <- ss_reg + rss
+total_ss
+```
+
+### e)
+
+Correlation coefficient can be found by $\sqrt{\frac{SS_{reg}}{SYY}}$, where $SYY$ is the total SS.
+
+```{r}
+r <- sqrt(ss_reg/total_ss)
+r
+```
+
+## Question 1
+
+```{r}
+armspan <- read.csv("armspans2022_gender.csv")
+head(armspan)
+```
+
+### a)
+
+```{r}
+# 1 in the is.female column represents a female
+mean(armspan$is.female)
+```
+
+### b)
+
+```{r}
+model <- lm(armspan ~ is.female, data = armspan)
+summary(model)
+```
+
+The intercept is 69.7586. This represents that the average armspan length for males in the dataset (is.female = 0) is about 69.76 inches.
+
+### c)
+
+The slope is -7.7338. This represents that on average, females in the dataset have an armspan length that is 7.7338 inches shorter than that of males.
+
+### d)
+
+The t-testistic and the p-value for the slope is testing our null hypothesis $H_0: \beta_1 = 0$ and our alternative hypothesis $H_a: \beta_1 \neq 0$. In this context, it tests whether there is a statistically significant difference between the average armspan length for males and females.
+
+## Question 2
+
+```{r}
+iowa <- read.delim("iowatest.txt", header = T)
+head(iowa)
+
+model2 <- lm(Test ~ factor(City), data = iowa)
+summary(model2)
+```
+
+```{r}
+estimates <- summary(model2)$coefficients
+# since all estimates are relative to the first estimate:
+estimates[2:6] <- estimates[2:6] + estimates[1]
+cities <- sort(unique(iowa$City))
+par(cex.axis = 0.75)
+barplot(estimates[,1], names.arg = cities, xlab = "City", ylab = "Estimated Test Score", 
+        col = "lightblue", main = "Barplot of Test Score Estimates vs. Cities", 
+        ylim = c(0,70))
+```
+
+Comparing Iowa City against the other 5 cities, we notice that Iowa City does have the highest estimated test scores so we can conclude that Iowa City does outperform. 
+
+## Question 3
+
+```{r}
+model3 <- lm(Test ~ Poverty, data = iowa)
+summary(model3)
+```
+
+We test this by testing the hypothesis that our slope, or $\beta_1 = 0$. So, we have our null is $H_0: \beta_1 = 0$ and our alternative is $H_a: \beta_1 \neq 0$. Looking at the summary table above, we observe that the p-value for this test is $<2*10^{-16}$, which leads us to reject the null and conclude that there is evidence that poverty is associated with the test score.
+
+## Question 4
+
+```{r}
+plot(model3, which = 1:3)
+```
+
+1) The residuals vs fitted plot shows a mostly flat red line, indicating a good linear association. Also, the red line does not create a huge "fan" shape, indicating a constant variance.
+
+2) The qq-plot is mostly straight. Even at the ends of the plot, the points do not diverge too much from the dotted line. This indicates normality of our model.
+
+3) The scale-location plot also shows a relatively flat red line and we do not observe any trend among the data points, indicating constant variance.
+
+Combining results from the three plots, we see that the model is a valid one as it follows normality, homoscedasticity, and linearity.
+
+## Question 5
+
+```{r}
+plot(model3, which = 5)
+#hatvalues() returns a list of all observations' leverages
+which.max(hatvalues(model3))
+```
+
+The point with the highest leverage is the point on the far right side. The 27th row corresponds to this leverage. 
+
+Now, a point is generally a bad leverage point if a) leverage is more than $4/n$ and b) the standard residual is outside of $(-2,2)$.
+
+```{r}
+plot(model3, which = 5)
+n <- nrow(iowa)
+abline(v = 4/n, col = "blue")
+abline(h = c(-2,2), col = "blue")
+```
+
+So, we look for points that have a higher leverage than 0.03 and fall outside of $(-2,2)$ in terms of y-axis. Looking at the residual-leverage graph and the plotted lines above, there is no such point, so there seems to be no bad leverage points for the data.
+
+## Question 6
+
+```{r}
+summary(model3)
+```
+
+The F-test is used to test our null $H_0: \beta_1 = 0$ and our alternative $H_a: \beta_1 \neq 0$. Since our F-value is large and it yields a p-value of $<2*10^{-16}$, using a significance level of 5%, we reject the null and reach the same conclusion as we did in Question 3 (there is evidence that poverty is associated with the test score).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

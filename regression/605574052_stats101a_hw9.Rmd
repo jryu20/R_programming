@@ -1,0 +1,98 @@
+---
+title: "Homework 9"
+author: 'Jun Ryu, UID: 605574052'
+date: "2023-06-02"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+```
+
+## Question 1
+
+```{r}
+diet <- read.csv("dietstudy.csv")
+diet_r <- diet %>% select("DIET", "AGE", "SEX", "WEIGHT_0", "DROPOUT2", "WEIGHT_2", "ADHER_2")
+diet_r <- diet_r %>% mutate(wtchange = WEIGHT_2-WEIGHT_0)
+head(diet_r)
+```
+
+### a)
+
+```{r}
+wt_mean <- diet_r %>% group_by(DIET) %>% summarize(meanweight = mean(wtchange))
+barplot(wt_mean$meanweight, names.arg = wt_mean$DIET, xlab = "Diet", 
+        ylab = "Average Weight Change", col = "lightblue", ylim = c(-4,0))
+```
+
+The difference is definitely not extreme, but based on the above plot, Zone diet was the most effective.
+
+### b)
+
+```{r}
+diet_r[diet_r$wtchange == 0,]
+```
+
+Based on the above results, we observe that weight changes were recorded as 0 when the participants dropped out of the study. We will now proceed to filter these out.
+
+```{r}
+diet_r <- diet_r %>% filter(wtchange != 0)
+```
+
+### c)
+
+```{r}
+model <- lm(wtchange ~ AGE+DIET+SEX+WEIGHT_0+ADHER_2, data = diet_r)
+summary(model)
+```
+
+Given the above summary table, all of the predictor variables under DIET have a very high p-value, indicating they are not significant. A physician could tell a patient that one does not necessarily need to follow one of these diets in order to lose weight.
+
+### d)
+
+The DIETOrnish slope represents (given all the other predictor variables are held constant) that, on average, it will contribute to a 0.1542 less weight loss than the baseline diet, which is Atkins.
+
+### e)
+
+```{r}
+model2 <- update(model, .~.+ADHER_2:DIET)
+summary(model2)
+```
+
+The effect of adherence is clearly not the same for each of the diets as seen above in the summary table.
+
+## Question 2
+
+### a)
+
+Looking at the plots for the model 6.36, the model is certainly not valid as in the residual diagnostic plot, there is a fan shape of the data, representing non-constant variance. This claim is also supported by the scale-location plot, where we see an increasing trend. Moreover, the qq-plot is not straight, indicating a non-normality of errors.
+
+### b)
+
+As stated in the above part, we can learn that there is an failure in the condition of a constant variance in the model. Thus, we will have to possibly apply transformations (i.e. Box-Cox) to the model in order to offset these failures.
+
+### c)
+
+Observing the residuals vs. leverage plot, we can conclude that observations 222 and 223 are the bad leverage points since their standardized residuals are too high.
+
+### d)
+
+Looking at the plots for the model 6.37, this model certainly is better than 6.36 in the sense that the scale-location is now adjusted to not display any particular trends. The first diagnostic plot also is improved by reducing the presence of a fan shape. Thus, the issue with non-constant variance is definitely addressed by the Box-Cox transformation. Lastly, looking at the qq-plot, this plot is also better than the one by 6.36, thus the model could be concluded as a valid one.
+
+### e)
+
+Comparing the F-statistic for when the two insignificant predictors are kept and removed, the F-statistic is found to be higher when the predictors are removed, indicating a higher level of significance. Thus, removing the variables is a fair choice.
+
+### f)
+
+We add the new categorical variable that takes the manufacturer into account, but we also need to perform a partial F-test to make sure that the addition of this variable explains a significant amount of the total variation and thus is statistically significant.
+
+
+

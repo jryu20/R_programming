@@ -1,0 +1,155 @@
+---
+title: "Homework 4"
+author: "Jun Ryu, UID: 605574052"
+output: pdf_document
+date: "2023-04-28"
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+```
+
+## Question 1
+
+```{r}
+playbill <- read.csv("playbill.csv")
+head(playbill)
+
+model1 <- lm(CurrentWeek ~ LastWeek, data = playbill)
+summary(model1)
+```
+
+### a)
+
+```{r}
+confint(model1)
+```
+
+Using the LastWeek row ($\beta_1$), our 95% confidence interval is [0.9514971, 1.012666]. Thus, 1 seems to be a plausible value for $\beta_1$ as not only does it fit under our confidence interval, in the context of the problem, it indicates that gross box office results retain a similar value from one week to the next (offset by just $\beta_0$, a value that is not large in the scale of this problem), which makes sense.
+
+### b)
+
+We have our null is $H_0: \beta_0 = 10000$ and our alternative is $H_a: \beta_0 \neq 10000$. We will use the t-value as our test statistic. We had 6805 as our observed intercept value and 9929 as our standard error from the summary table.
+
+```{r}
+t_stat <- (6805-10000)/9929
+# we use n-2 as our degree of freedom
+2 * pt(abs(t_stat), nrow(playbill)-2, lower.tail=FALSE) 
+```
+
+p-value for the intercept is 0.75 (> 0.05), thus we fail to reject the null hypothesis that our intercept is equal to 10000.
+
+### c)
+
+```{r}
+predict(model1, data.frame(LastWeek = 400000), interval="prediction")
+```
+
+We use a prediction interval here as we are given one specific value of x and trying to predict y. Our prediction interval is [359832.8, 439442.2]. Looking at this interval, a gross box office result of $450000 is not feasible as it is quite above our upper bound for the interval.
+
+### d)
+
+Similar to what was stated in part a), as our model gives us a $\beta_1$ value of 0.9821, I think the said rule is appropriate since the model's slope is very close to 1.
+
+### residual plot)
+
+```{r}
+plot(playbill$LastWeek, resid(model1)) 
+abline(0,0)
+```
+
+Looking at the residual plot, it seems like the residuals are independent of one another and there seems to be similar amounts of residuals above and below the midline of 0. Also, there appears to be constant variance as well (although harder to tell since there are such few data points). Thus, all this supports the claim that our model is a good linear fit.
+
+## Question 2
+
+```{r}
+indicator <- read.table("indicators.txt", header = T)
+head(indicator)
+
+model2 <- lm(PriceChange ~ LoanPaymentsOverdue, data = indicator)
+summary(model2)
+```
+
+### a)
+
+```{r}
+confint(model2)
+```
+
+Using the LoanPaymentsOverdue row ($\beta_1$), our 95% confidence interval is [-4.163454, -0.3335853]. Since this interval is solely comprised of negative values, there surely is evidence of a negative linear association.
+
+### b)
+
+```{r}
+predict(model2, data.frame(LoanPaymentsOverdue = 4), interval = "confidence")
+```
+
+Here, we use a confidence interval instead because we want the mean value of Y instead. Our confidence interval is [-6.648849, -2.310322]. Looking at this interval, 0 is definitely not a feasible value as our confidence interval lies way below 0.
+
+### residual plot)
+
+```{r}
+plot(indicator$LoanPaymentsOverdue, resid(model2)) 
+abline(0,0)
+```
+
+Observing the residual plot, we see independence, normality, and constant variance as similar to Question 1. Thus, this model seems to be a good linear fit.
+
+## Question 3
+
+### a)
+
+```{r}
+# values from the textbook
+beta0 <- 0.6417099
+standard_error <- 0.1222707
+
+# 95% confidence interval
+c(beta0 - 1.96*standard_error, beta0 + 1.96*standard_error)
+```
+
+### b)
+
+We use t-statistic as we also did in 1b). We have our null is $H_0: \beta_1 = 0.01$ and our alternative is $H_a: \beta_1 \neq 0.01$.
+
+```{r}
+t_stat_2 <- (0.01-0.0112916)/0.0008184
+2 * pt(abs(t_stat_2), 28, lower.tail=FALSE) # we use 28 as our degree of freedom
+```
+
+p-value is 0.12575 (> 0.05), thus we fail to reject the null hypothesis that the average processing time for
+an additional invoice is 0.01 hours.
+
+### c)
+
+Prediction interval is given by: $\hat{y} \pm t^*SE(\hat{y})$, where $SE(\hat{y}) = \sqrt{\sigma^2(1+\frac{1}{n}+\frac{(x^*-\bar{x})^2}{SXX})}$. In this case, we have 130 invoices is our mean ($\bar{x}$), so our formula reduces down to $SE(\hat{y}) = \sqrt{\sigma^2(1+\frac{1}{n})}$ (since $x^* = \bar{x}$). So, here $n$ is our sample size of 30, and we can figure our $\sigma^2$ ($MSE$) by calculating $\frac{RSE^2*28}{30}$ since $RSE = \sqrt{\frac{\sum(x-\hat{x})^2}{n-2}}$.
+
+```{r}
+# from the textbook
+beta0 <- 0.6417099
+beta1 <- 0.0112916
+rse <- 0.3298
+processing_time <- beta0 + beta1 * 130
+sigma_squared <- rse^2*28/30
+error <- qt(0.975, 28) * sqrt(sigma_squared) * sqrt(1 + 1/30)
+c(processing_time - error, processing_time + error) # prediction interval
+processing_time # point estimate
+```
+
+### Question 4
+
+D is the correct option. Observing both graphs, we see that RSS is smaller for model 1 because the observed values are closer to the regression line in model 1 than model 2. However, for SSreg, the value is greater for model 1 since the regression line stretches farther away from the mean of the sample (in the span of the graph shown) with its steep slope. 
+
+
+
+
+
+
+
+
+
+
+

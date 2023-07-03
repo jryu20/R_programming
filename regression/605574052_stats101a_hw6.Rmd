@@ -1,0 +1,135 @@
+---
+title: "Homework 6"
+author: 'Jun Ryu, UID: 605574052'
+date: "2023-05-12"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(dplyr)
+```
+
+## Question 1
+
+Although the model does seem to fit the data well since most data points lie close to the line, looking at the standardized residuals vs. distance plot, we see that there is a problem with non-constant variance. This is noted through a quadratic shape of the residuals and also an overall decreasing trend. Moreover, we notice some outliers in the residual plot that might be affecting the model. Thus, some changes we could make are removing these outliers and/or fitting a quadratic model instead.
+
+## Question 2 Part A
+
+```{r}
+rev <- read.csv("AdRevenue.csv")
+head(rev)
+```
+
+### a)
+
+```{r}
+model <- lm(AdRevenue ~ Circulation, data = rev)
+plot(model)
+```
+
+Looking at this fit, we notice that the model is not valid because even from just looking at the qq-plot, we notice that the plot is not straight and thus shows non-normality. In the other plots, we observe that we have an issue dealing with range more than one order of magnitude as some fitted values are detached really far away from the rest. Thus, we can adjust this by taking the log of both variables and seeing what happens.
+
+```{r}
+log_model <- lm(log(AdRevenue) ~ log(Circulation), data = rev)
+plot(log_model)
+```
+
+We notice that this is a much improved model since not only have we achieved straightness in the qq-plot, but we notice a better scaling of our observations in the other plots. 
+
+### b)
+
+```{r}
+# we have to to e^(interval) because the returned interval would represent log(y) values
+# intervals represent the cost in thousands of dollars
+
+exp(1)^predict(log_model, data.frame(Circulation = 0.5), interval="prediction")
+exp(1)^predict(log_model, data.frame(Circulation = 20), interval="prediction")
+```
+
+### c)
+
+Referring to the plots from part a) of our revised log model, we do notice a good normality through the straight line in the qq-plot. In the leverage plot, we don't really see bad leverage points, which is also a strength of our model. However, there is a slight issue with constant variance as we see an increasing trend in the scale-location graph and this is a certainly a weakness of our model.
+
+## Question 2 Part B
+
+### a)
+
+Now, we will try to fit a quadratic and a cubic model to see if a polynomial regression model will better fit our data.
+
+```{r}
+# fit a quadratic model (no data transformation)
+secondorder <- lm(AdRevenue ~ Circulation + I(Circulation^2), data = rev)
+plot(secondorder)
+```
+
+```{r}
+# fit a cubic model
+thirdorder <- lm(AdRevenue ~ Circulation + I(Circulation^2) + I(Circulation^3), data = rev)
+plot(thirdorder)
+```
+
+### b)
+
+```{r}
+# intervals represent the cost in thousands of dollars
+predict(secondorder, data.frame(Circulation = 0.5), interval="prediction")
+predict(secondorder, data.frame(Circulation = 20), interval="prediction")
+
+predict(thirdorder, data.frame(Circulation = 0.5), interval="prediction")
+predict(thirdorder, data.frame(Circulation = 20), interval="prediction")
+```
+
+### c)
+
+We notice a lot of weaknesses in our quadratic and cubic models. First, for both the quadratic and the cubic model, the qq-line is clearly not straight and trails off dramatically on the ends of each plot, indicating non-normality. Also, looking at the scale-location plots, both models show an increasing trend of the standardized residuals, indicating non-constant variance. Also, the leverage plot shows the existence of high influence points in both models having Cook's distances greater than 1.
+
+## Question 2 Part C
+
+### a)
+
+Comparing all three models, the linear model with the data transformed using the log function is the best. This is because we were able to achieve normality of the data, maintain an appropriate scaling of fitted values, and have no bad leverage points/high influence points. All of these are violated in the quadratic/cubic models.
+
+### b)
+
+For the prediction intervals, I would recommend the intervals posed by the linear model as I have mentioned in part a) about how it is the most accurate model out of the three.
+
+## Question 3
+
+### a)
+
+For each discrete value of $x$, calculate the variance by computing $\sigma^2 = \sum(x_i-\bar{x})/n$, where $x_i$ represents the different observations under a specific discrete $x$ value and $\bar{x}$ represents the average of these observation quantities. Then, derive the standard deviation by taking the square root of the variance. 
+
+### b)
+
+The method above only works with discrete values of $x$ and not continuous sets because looking at the formula, it can only account for calculating the standard deviation of one variable (which, in this case, is the y-variable representing the number of rooms cleaned). Thus, if $x$ were to be continuous, we would essentially have to calculate an infinite number of standard deviations since there would be infinite x-values in any non-empty continuous interval.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
