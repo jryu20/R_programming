@@ -1,0 +1,304 @@
+---
+title: "Stats 20, S22A -- Homework 2"
+author: "Jun Ryu -- 605574052"
+date: "`r format(Sys.Date(), '%D')`"
+output:
+  html_document:
+    toc: yes            # creates table of contents
+    toc_depth: 4        # toc will include headers <= ####
+    toc_float: yes      # toc always on left of page
+    code_folding: show  # allows hiding of code
+---
+
+## Question 1
+
+### (a)
+mixed2 and mixed3 produce different results because the former performs only 1 combination between different modes, whereas the latter performs 2 combinations. Based on the mode hierarchy, combining logical, numeric, and character vectors gives us a character vector as seen in mixed2 with TRUEs and FALSEs as character values. However, in mixed3, we first are combining a logical and a numeric vector, resulting in a numeric vector where TRUEs are changed into 1 and FALSEs are changed into 0. Now, trying to combine this numeric vector with a character results in a character vector with "1"s and "0"s. 
+
+### (b)
+```{r}
+c(TRUE, FALSE, c(FALSE, TRUE, 4, 0), "3")
+
+```
+
+## Question 2
+
+### (a)
+```{r}
+mixed2 <- c(TRUE, FALSE, FALSE, TRUE, 4, 0, "3")
+mixed3 <- c(c(TRUE, FALSE, FALSE, TRUE, 4, 0), "3")
+as.numeric(mixed2)
+as.numeric(mixed3)
+```
+
+We get different results because trying to coerce the values in mixed2 into numeric values will not work since there are "TRUE"s and "FALSE"s. However, in mixed3, since all character values contain a single number, all values can be coerced into numeric values properly.
+
+### (b)
+```{r}
+as.logical(mixed2)
+as.logical(mixed3)
+```
+
+Again, we get different results because trying to coerce a character value into a logical value will not work unless the character value possesses either a TRUE or a FALSE. 
+
+### (c)
+```{r}
+as.logical(as.numeric(mixed3))
+
+```
+
+## Question 3
+
+### (a)
+
+```{r}
+seq(1,25)
+1:25
+seq_len(25)
+seq_along(rep(0,25))
+```
+
+(i) seq(1,25)
+
+(ii) 1:25
+
+(iii) seq_len(25)
+
+(iiii) seq_along(rep(0,25))
+
+### (b)
+
+```{r}
+seq(8, 2, by = -0.5)
+rep(c(-1,0,3,5),5)
+rep(seq(5, 1, by = -1),5)
+rep(seq(5, 1, by = -1), rep(5,5))
+rep(seq(10, 6, by = -1), rep(seq(1,5),1))
+```
+
+(i) seq(8, 2, by = -0.5)
+
+(ii) rep(c(-1,0,3,5),5)
+
+(iii) rep(seq(5, 1, by = -1),5)
+
+(iv) rep(seq(5, 1, by = -1), rep(5,5))
+
+(v) rep(seq(10, 6, by = -1), rep(seq(1,5),1))
+
+### (c)
+
+This sequence cannot be generated only using seq() and rep() because we notice a pattern of a 5-entry vector set decreasing by one each time, but we cannot create this when there are different starting and ending numbers in each of this 5-entry set. Furthermore, this sequence is a bit different from the sequences listed in part (b) because for the sequences in (b), we see a pattern where a same vector set is repeated a number of times. However, we can create this vector set by the following:
+
+```{r}
+
+rep(seq(10, 6, by = -1), 5) - rep(seq(0,4),rep(5,5))
+
+```
+
+## Question 4
+
+### (a)
+
+```{r Question 4a}
+my_skew <- function(x) {
+  n <- length(x)
+  ((sqrt(n))*sum((x-mean(x))^3))/((sum((x-mean(x))^2))^1.5)
+  
+}
+  
+```
+
+### (b)
+
+```{r Question 4b}
+running_times <- c(51, 40, 57, 34, 47, 50, 50, 56, 41, 38)
+my_skew(running_times)
+  
+```
+
+### (c)
+<!-- USE THE CODE CHUNK BELOW -->
+```{r Question 4c}
+my_skew_one <- function(x) {
+  n <- length(x)
+  (sqrt(n))*(sum(x^3)-3*mean(x)*sum(x^2)+2*n*(mean(x)^3))/((sum(x^2)-n*(mean(x)^2))^1.5)
+  
+}
+
+my_skew_one(running_times)
+```
+
+### (d)
+
+```{r}
+
+new_running_times <- running_times*1e10
+my_skew(new_running_times)
+my_skew_one(new_running_times)
+
+```
+
+These results do not differ from the answers in part b) and c) because intuitively, if we multiply every single data point by the same factor (1e10, in this case), the data points retain the same proportions, meaning that the measure of distribution will be identical and thus, it will not affect the skewness of the overall data. 
+
+### (e)
+
+```{r}
+my_skew(running_times) - my_skew_one(running_times)
+
+```
+
+This minute error occurs due to rounding errors. Since computers cannot store real numbers with infinite precision, computers "approximate" numbers using floating point representation. Thus, since these approximations do not perfectly represent the actual value, rounding errors stack up, especially in the case of the one-pass formula. Thus, the difference does not come out to be exactly 0.
+
+## Question 5
+
+### (a)
+
+```{r}
+commute_times <- c(14, 12, 20, 19, 15, 20, 28, 20, 20, 18)
+logical_index <- abs(commute_times-mean(commute_times)) > sd(commute_times)
+commute_times[logical_index]
+
+```
+
+### (b)
+
+```{r}
+commute_times[!logical_index]
+```
+
+### (c)
+
+```{r}
+
+mean(!logical_index)
+
+```
+
+
+## Question 6
+
+### (a)
+
+Expressions with NA will output a TRUE or a FALSE if the truth value of "NA" does not matter in evaluating the truth value of the whole expression. For example, NA | TRUE outputs TRUE because since one side is already TRUE, the output is TRUE regardless of if the truth value of NA is really TRUE or FALSE. Same goes for NA & FALSE; since one side is already FALSE, the corresponding output is automatically ruled to be FALSE no matter whether NA is TRUE or FALSE. Now, NA & TRUE and NA | FALSE will output NA because depending on the value of NA, the output will vary, so the output is ruled as an "unknown" or NA. For example, TRUE & TRUE is TRUE while FALSE & TRUE is FALSE, so the value of NA matters in this case of NA & TRUE.
+
+## Question 7
+
+### (a)
+
+```{r}
+get_minimum_coins <- function(cents) {
+  quarters <- (cents%/%25)
+  dimes <- (cents%%25)%/%10
+  nickels <- ((cents%%25)%%10)%/%5
+  pennies <- (((cents%%25)%%10)%%5)
+  quarters + dimes + nickels + pennies
+}
+
+```
+
+The function written in HW1 (as seen above) is vectorized because the function is created out of vectorized operations (taking the modular and finding the quotient).
+
+### (b)
+
+```{r}
+
+which(get_minimum_coins(seq(1:100)) == max(get_minimum_coins(seq(1:100))))
+
+```
+
+## Question 8
+
+### (a)
+
+```{r}
+
+my_length <- function(x) {
+  max(0, seq_along(x))
+}
+
+```
+
+### (b)
+
+```{r}
+my_length(numeric(0))
+my_length(seq(1, 99, by = 2))
+my_length(c("friends", "waffles", "work"))
+```
+
+## Question 9
+
+### (a)
+
+```{r}
+
+my_rev <- function(x) {
+  x[my_length(x):0]
+}
+
+```
+
+
+### (b)
+
+```{r}
+
+my_rev(numeric(0))
+my_rev(seq(1, 99, by = 2))
+my_rev(c("friends", "waffles", "work"))
+
+```
+
+## Question 10
+
+### (a)
+
+```{r}
+
+front <- function(x, n) {
+  x[0:(min(length(x), n))]
+}
+
+
+front(numeric(0), 6)
+front(seq(1, 99, by = 2), 6)
+front(c("friends", "waffles", "work"), 6)
+front(c("friends", "waffles", "work"), 0)
+```
+
+### (b)
+
+```{r}
+
+back <- function(x, n) {
+  rev(x)[(min(length(x), n)):0]
+}
+
+
+back(numeric(0), 6)
+back(seq(1, 99, by = 2), 6)
+back(c("friends", "waffles", "work"), 6)
+back(c("friends", "waffles", "work"), 0)
+```
+
+### (c)
+
+```{r}
+
+insert_at <- function(x, values, at) {
+  c(c(c(front(x,at-1)), values), back(x,(length(x) - at + 1)))
+}
+
+
+```
+
+### (d)
+
+```{r}
+
+insert_at(1:5, c(0, 0, 0), at = 1)
+insert_at(1:5, c(0, 0, 0), at = 3)
+insert_at(1:5, c(0, 0, 0), at = 5)
+insert_at(1:5, c(0, 0, 0), at = 6)
+```
